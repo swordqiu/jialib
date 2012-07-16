@@ -1,0 +1,43 @@
+<?php
+
+if(!function_exists("get_query_db")) {
+	die("function get_query_db must be defined before db_query.inc.php!");
+}
+
+if(!defined(_DB_INC_)) {
+	die("_DB_INC_ is not included before db_query.inc.php!");
+}
+
+include_once("get_form_data.inc.php");
+
+invalidateCache();
+
+$conn = get_query_db();
+
+if(isset($_query_cond) && isset($_query_vars) && isset($_query_order) && isset($_query_tbls) && $_query_tbls != "") {
+
+	$_query_cond = stripslashes($_query_cond);
+	$_query_vars = stripslashes($_query_vars);
+	$_query_tbls = stripslashes($_query_tbls);
+
+	#_log("db_query: SELECT {$_query_vars} FROM {$_query_tbls} WHERE {$_query_cond}");
+
+	echo $conn->query_json($_query_vars, $_query_tbls, $_query_cond, $_query_order, $_query_limit, $_query_offset);
+
+}elseif(isset($_query_proc)) {
+	$_query_proc = stripslashes($_query_proc);
+
+	echo $conn->proc_json($_query_proc);
+
+}elseif(isset($_query_func)) {
+	if(!defined("LIBUI_DB_QUERY_FUNC_SCRIPT_PATH")) {
+		die("die LIBUI_DB_QUERY_FUNC_SCRIPT_PATH is not defined!");
+		include(LIBUI_DB_QUERY_FUNC_SCRIPT_PATH);
+	}
+}else{
+	echo "ERROR: Illegal request!";
+}
+
+$conn->close();
+
+?>
